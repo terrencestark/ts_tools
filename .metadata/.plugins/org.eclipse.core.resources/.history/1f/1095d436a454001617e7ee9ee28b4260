@@ -1,0 +1,70 @@
+package tcpserver;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Socket;
+
+/**
+ * 完成从一个socket中提取字节流数据（7E-7E），并执行对数据的解析、存储等业务。
+ * 
+ * @author ZXT
+ */
+public class SocketDataHandler extends Thread {
+	private final String notation = "[DataHandler]: ";
+	
+	private Socket socket;
+	private InputStream in = null;
+	
+	public SocketDataHandler() {
+		// TODO Auto-generated constructor stub
+	}
+	/**
+	 * 构造一个处理socket信息流的线程。
+	 * @param socket
+	 */
+	public SocketDataHandler(Socket socket) {
+		this.socket = socket;
+		try {
+			in= socket.getInputStream();
+		} catch (IOException e) {
+			System.err.println(notation + "Get socket inputStream Failed.");
+		}
+	}
+	
+	/**
+	 * 在得到一个完整的PPP数据(7E-7E)后分步用函数处理数据
+	 * 实现对数据处理的调用逻辑
+	 */
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		super.run();
+		
+		int newData;//用int存新字节
+		
+		try {
+			while (((newData = in.read()) != -1)) {
+				System.out.println("one data:");
+				System.out.print((char)newData);
+				
+			}
+		} catch (IOException e) {
+			System.out.println(notation + this.getName() + " Exit with Exception/tiemout.");
+			try {
+				socket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+		// 线程退出提示
+		System.out.println(notation +" Socket " + this.getName() + " Exit.");
+		try {
+			// 对方主动停止会引起包装流close socket
+			if (socket.isClosed() == false)
+				socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}//end of run
+}
